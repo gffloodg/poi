@@ -224,7 +224,7 @@ public class DrawTextParagraph implements Drawable {
 
             line.setPosition(penX, penY);
             line.draw(graphics);
-            penY += line.getHeight();
+            penY += Math.round(line.getHeight());
 
             lastLine = line;
         }
