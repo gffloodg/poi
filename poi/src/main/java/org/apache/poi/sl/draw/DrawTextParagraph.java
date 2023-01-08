@@ -167,21 +167,40 @@ public class DrawTextParagraph implements Drawable {
         for(DrawTextFragment line : lines){
             double penX;
 
-
-            if (!(isFirstParagraph() && lastLine == null)) {
+            // This is the first line of a paragraph.
+            if (!(isFirstParagraph() && lastLine == null))
+            {
                 // penY is now on descent line of the last text fragment
                 // need to substract descent height to get back to the baseline of the last fragment
                 // then add a multiple of the line height of the current text height
-                penY -= line.getLeading() + ((lastLine == null) ? 0 : lastLine.getLayout().getDescent());
+                double spacingAdvance = 0;
+                spacingAdvance -= line.getLeading() + ((lastLine == null) ? 0 : lastLine.getLayout().getDescent());
 
-                if(spacing > 0) {
+                if (spacing > 0) {
                     // If linespacing >= 0, then linespacing is a percentage of normal line height.
-                    penY += (spacing*0.01) * line.getHeight(); //  + (isHSLF ? line.getLayout().getLeading() : 0));
+                    spacingAdvance += (spacing * 0.01) * Math.ceil(line.getHeight()); //  + (isHSLF ? line.getLayout().getLeading() : 0));
                 } else {
                     // negative value means absolute spacing in points
-                    penY += -spacing;
+                    spacingAdvance += -spacing;
                 }
-                penY -= line.getLayout().getAscent();
+                spacingAdvance -= line.getLayout().getAscent();
+                penY += Math.ceil(spacingAdvance);
+            } else {
+                if (spacing != 100) {
+                    //penY -= line.getLeading();
+                    penY -= line.getHeight();
+
+                    if (spacing > 0) {
+                        // If linespacing >= 0, then linespacing is a percentage of normal line height.
+                        penY += (spacing * 0.01) * (line.getHeight() - line.getLeading()); //  + (isHSLF ? line.getLayout().getLeading() : 0));
+                    } else {
+                        // negative value means absolute spacing in points
+                        penY += -spacing;
+                    }
+                    penY -= line.getLeading();
+                    //penY -= line.getHeight();
+                    //penY -= line.getLayout().getAscent();
+                }
             }
 
             penX = x + leftMargin;
@@ -224,7 +243,7 @@ public class DrawTextParagraph implements Drawable {
 
             line.setPosition(penX, penY);
             line.draw(graphics);
-            penY += Math.round(line.getHeight());
+            penY += line.getHeight();
 
             lastLine = line;
         }
