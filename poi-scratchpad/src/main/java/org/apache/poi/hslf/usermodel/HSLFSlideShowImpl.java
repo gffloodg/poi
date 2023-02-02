@@ -310,18 +310,23 @@ public final class HSLFSlideShowImpl extends POIDocument implements Closeable {
 
     private void initRecordOffsets(byte[] docstream, int usrOffset, NavigableMap<Integer, Record> recordMap, Map<Integer, Integer> offset2id) {
         while (usrOffset != 0) {
-            UserEditAtom usr = (UserEditAtom) Record.buildRecordAtOffset(docstream, usrOffset);
-            if (usr == null) {
-                throw new CorruptPowerPointFileException("Powerpoint document contains no user edit atom");
+            Record builtRecord = Record.buildRecordAtOffset(docstream, usrOffset);
+            if (!(builtRecord instanceof UserEditAtom)) {
+                throw new CorruptPowerPointFileException("Did not have a user edit atom: " + builtRecord);
             }
+            UserEditAtom usr = (UserEditAtom) builtRecord;
 
             recordMap.put(usrOffset, usr);
 
             int psrOffset = usr.getPersistPointersOffset();
-            PersistPtrHolder ptr = (PersistPtrHolder) Record.buildRecordAtOffset(docstream, psrOffset);
-            if (ptr == null) {
+            Record record = Record.buildRecordAtOffset(docstream, psrOffset);
+            if (record == null) {
                 throw new CorruptPowerPointFileException("Powerpoint document is missing a PersistPtrHolder at " + psrOffset);
             }
+            if (!(record instanceof PersistPtrHolder)) {
+                throw new CorruptPowerPointFileException("Record is not a PersistPtrHolder: " + record + " at " + psrOffset);
+            }
+            PersistPtrHolder ptr = (PersistPtrHolder) record;
             recordMap.put(psrOffset, ptr);
 
             for (Map.Entry<Integer, Integer> entry : ptr.getSlideLocationsLookup().entrySet()) {
@@ -496,6 +501,9 @@ public final class HSLFSlideShowImpl extends POIDocument implements Closeable {
         //  records share an offset.
         Map<Integer, List<EscherBSERecord>> unmatchedRecords = new HashMap<>();
         for (EscherRecord child : blipStore) {
+            if (!(child instanceof EscherBSERecord)) {
+                throw new CorruptPowerPointFileException("Did not have a EscherBSERecord: " + child);
+            }
             EscherBSERecord record = (EscherBSERecord) child;
             unmatchedRecords.computeIfAbsent(record.getOffset(), k -> new ArrayList<>()).add(record);
         }
@@ -609,6 +617,9 @@ public final class HSLFSlideShowImpl extends POIDocument implements Closeable {
         CountingOS cos = new CountingOS();
         for (Record record : _records) {
             // all top level records are position dependent
+            if (!(record instanceof PositionDependentRecord)) {
+                throw new CorruptPowerPointFileException("Record is not a position dependent record: " + record);
+            }
             PositionDependentRecord pdr = (PositionDependentRecord) record;
             int oldPos = pdr.getLastOnDiskOffset();
             int newPos = cos.size();
@@ -977,7 +988,13 @@ public final class HSLFSlideShowImpl extends POIDocument implements Closeable {
     private EscherContainerRecord getBlipStore() {
         Document documentRecord = null;
         for (Record record : _records) {
+            if (record == null) {
+                throw new CorruptPowerPointFileException("Did not have a valid record: " + record);
+            }
             if (record.getRecordType() == RecordTypes.Document.typeID) {
+                if (!(record instanceof Document)) {
+                    throw new CorruptPowerPointFileException("Did not have a Document: " + record);
+                }
                 documentRecord = (Document) record;
                 break;
             }
@@ -985,6 +1002,10 @@ public final class HSLFSlideShowImpl extends POIDocument implements Closeable {
 
         if (documentRecord == null) {
             throw new CorruptPowerPointFileException("Document record is missing");
+        }
+
+        if (documentRecord.getPPDrawingGroup() == null) {
+            throw new CorruptPowerPointFileException("Drawing group is missing");
         }
 
         EscherContainerRecord blipStore;

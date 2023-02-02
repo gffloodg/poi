@@ -65,7 +65,7 @@ configurations {
 }
 
 dependencies {
-    antLibs("org.junit.jupiter:junit-jupiter:5.9.1")
+    antLibs("org.junit.jupiter:junit-jupiter:5.9.2")
     antLibs("org.apache.ant:ant-junitlauncher:1.10.12")
 }
 
@@ -120,13 +120,13 @@ subprojects {
         commonsCompressVersion = '1.22'
         commonsIoVersion = '2.11.0'
         commonsMathVersion = '3.6.1'
-        junitVersion = '5.9.0'
+        junitVersion = '5.9.2'
         log4jVersion = '2.19.0'
         mockitoVersion = '4.11.0'
         hamcrestVersion = '2.2'
         xmlbeansVersion = '5.1.1'
         batikVersion = '1.16'
-        graphics2dVersion = '0.41'
+        graphics2dVersion = '0.42'
         pdfboxVersion = '2.0.27'
         saxonVersion = '11.4'
         apiGuardianVersion = '1.1.2'
@@ -150,7 +150,7 @@ subprojects {
             resolutionStrategy {
                 force "commons-io:commons-io:${commonsIoVersion}"
                 force 'org.slf4j:slf4j-api:2.0.6'
-                force 'com.fasterxml.woodstox:woodstox-core:6.4.0'
+                force 'com.fasterxml.woodstox:woodstox-core:6.5.0'
             }
         }
     }
@@ -172,6 +172,12 @@ subprojects {
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
         testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
         testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+
+        if (SAXON_TEST) {
+            testRuntimeOnly("net.sf.saxon:Saxon-HE:${saxonVersion}") {
+                exclude group: 'xml-apis', module: 'xml-apis'
+            }
+        }
     }
 
     java {

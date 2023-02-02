@@ -105,11 +105,15 @@ public final class PropertyTable implements BATManaged {
             PropertyFactory.convertToProperties(data, _properties);
         }
 
-        if (_properties.get(0) != null) {
-            populatePropertyTree((DirectoryProperty) _properties.get(0));
+        Property property = _properties.get(0);
+        if (property != null) {
+            if (property instanceof DirectoryProperty) {
+                populatePropertyTree((DirectoryProperty) property);
+            } else {
+                throw new IOException("Invalid format, cannot convert property " + property + " to DirectoryProperty");
+            }
         }
     }
-
 
     /**
      * Add a property to the list of properties we manage
@@ -136,7 +140,13 @@ public final class PropertyTable implements BATManaged {
      */
     public RootProperty getRoot() {
         // it's always the first element in the List
-        return ( RootProperty ) _properties.get(0);
+        Property property = _properties.get(0);
+        if (property instanceof RootProperty) {
+            return (RootProperty) property;
+        } else {
+            throw new IllegalStateException("Invalid format, cannot convert property " +
+                    property + " to RootProperty");
+        }
     }
 
     /**

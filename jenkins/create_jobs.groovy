@@ -56,7 +56,9 @@ def poijobs = [
         [ name: 'POI-DSL-1.19', jdk: '1.19', trigger: triggerSundays, skipcigame: true, skipSpotbugs: true
         ],
         // Jenkins on ci-builds.apache.org does not support spotbugs with a new enough version of asm for Java18+
-        [ name: 'POI-DSL-1.20', jdk: '1.20', trigger: triggerSundays, skipcigame: true, skipSpotbugs: true, useAnt: true
+        [ name: 'POI-DSL-1.20', jdk: '1.20', trigger: triggerSundays, skipcigame: true, skipSpotbugs: true,
+          // these two can be removed again when gradle supports JDK 20
+          useAnt: true, skipSourceBuild: true
         ],
         // Use Ant-build for now as selecting IBM JDK via toolchain does not work (yet)
         [ name: 'POI-DSL-IBM-JDK', jdk: 'IBMJDK', trigger: triggerSundays, skipcigame: true, useAnt: true
@@ -202,9 +204,9 @@ def apicheckDesc = '''
 
 def sonarDesc = '''
 <p>
-<b><a href="lastSuccessfulBuild/findbugsResult/" target="_blank">Findbugs report of latest build</a></b> -
+<b><a href="lastSuccessfulBuild/spotbugs/" target="_blank">Spotbugs report of latest build</a></b> -
 <b><a href="https://sonarcloud.io/dashboard?id=poi-parent" target="_blank">Sonar reports</a></b> -
-<b><a href="lastSuccessfulBuild/artifact/build/coverage/index.html" target="_blank">Coverage of latest build</a></b>
+<b><a href="lastSuccessfulBuild/jacoco/" target="_blank">Coverage of latest build</a></b>
 </p>
 '''
 
@@ -252,6 +254,8 @@ def shellCmdsWin =
 svn status
 :: make sure no changed module-class-files are lingering on
 svn revert poi*\\src\\*\\java9\\module-info.*
+:: also revert some files directly as the wildcard-based revert seems to fail sometimes
+svn revert poi\\src\\main\\java9\\module-info.class poi\\src\\test\\java9\\module-info.class poi-examples\\src\\main\\java9\\module-info.class poi-excelant\\src\\main\\java9\\module-info.class poi-excelant\\src\\test\\java9\\module-info.class poi-integration\\src\\test\\java9\\module-info.class poi-ooxml\\src\\main\\java9\\module-info.class poi-ooxml\\src\\test\\java9\\module-info.class poi-ooxml-full\\src\\main\\java9\\module-info.class poi-ooxml-lite\\src\\main\\java9\\module-info.class poi-ooxml-lite\\src\\main\\java9\\module-info.java poi-ooxml-lite-agent\\src\\main\\java9\\module-info.class poi-scratchpad\\src\\main\\java9\\module-info.class poi-scratchpad\\src\\test\\java9\\module-info.class src\\resources\\ooxml-lite-report.clazz src\\resources\\ooxml-lite-report.xsb
 
 :: print out information about which exact version of java we are using
 echo Java-Home: %JAVA_HOME%
@@ -466,12 +470,14 @@ poijobs.each { poijob ->
                         //properties(poijob.properties ?: '')
                         antInstallation(antRT)
                     }
-                    ant {
-                        targets(['run'] + (poijob.properties ?: []))
-                        buildFile('poi-integration/build.xml')
-                        // Properties did not work, so I had to use targets instead
-                        //properties(poijob.properties ?: '')
-                        antInstallation(antRT)
+                    if(!poijob.skipSourceBuild) {
+                        ant {
+                            targets(['run'] + (poijob.properties ?: []))
+                            buildFile('poi-integration/build.xml')
+                            // Properties did not work, so I had to use targets instead
+                            //properties(poijob.properties ?: '')
+                            antInstallation(antRT)
+                        }
                     }
                 }
             }
@@ -488,9 +494,10 @@ poijobs.each { poijob ->
                 }
                 // in archive, junit and jacoco publishers, matches beneath build/*/build/... are for Gradle-build results
                 archiveArtifacts('build/dist/*.zip,build/dist/*.tgz,build/dist/maven/*/*.jar,build/coverage/**,*/build/reports/*.bom.*,build/hs_err*.log')
+                /* this plugin is currently missing on the Apache Jenkins instance
                 warnings(['Java Compiler (javac)', 'JavaDoc Tool'], null) {
                     resolveRelativePaths()
-                }
+                } */
                 archiveJunit('*/build/test-results/**/TEST-*.xml') {
                     testDataPublishers {
                         publishTestStabilityData()
@@ -618,9 +625,10 @@ xmlbeansjobs.each { xjob ->
         publishers {
             archiveArtifacts('build/libs/xmlbeans*.jar,build/distributions/*,build/reports/*.bom.*,build/hs_err*.log')
 
+            /* this plugin is currently missing on the Apache Jenkins instance
             warnings(['Java Compiler (javac)', 'JavaDoc Tool'], null) {
                 resolveRelativePaths()
-            }
+            } */
             archiveJunit('build/test-results/test/TEST-*.xml') {
                 testDataPublishers {
                     publishTestStabilityData()
