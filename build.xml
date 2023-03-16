@@ -268,7 +268,7 @@ under the License.
     <dependency prefix="main.commons-math3" artifact="org.apache.commons:commons-math3:3.6.1" usage="main"/>
     <dependency prefix="main.commons-io" artifact="commons-io:commons-io:2.11.0" usage="main"/>
     <dependency prefix="main.com.zaxxer" artifact="com.zaxxer:SparseBitSet:1.2" usage="main"/>
-    <dependency prefix="main.log4j-api" artifact="org.apache.logging.log4j:log4j-api:2.19.0" usage="main"/>
+    <dependency prefix="main.log4j-api" artifact="org.apache.logging.log4j:log4j-api:2.20.0" usage="main"/>
 
     <dependency prefix="main.junit-api" artifact="org.junit.jupiter:junit-jupiter-api:5.9.2" usage="main-tests"/>
     <dependency prefix="main.junit-jengine" artifact="org.junit.jupiter:junit-jupiter-engine:5.9.2" usage="main-tests"/>
@@ -285,10 +285,10 @@ under the License.
     <dependency prefix="main.hamcrest" artifact="org.hamcrest:hamcrest:2.2" usage="main-tests"/>
     <dependency prefix="main.xmlunit" artifact="org.xmlunit:xmlunit-core:2.9.1" usage="main-tests"/>
     <dependency prefix="main.mockito" artifact="org.mockito:mockito-core:4.11.0" usage="main-tests"/>
-    <dependency prefix="main.byte-buddy" artifact="net.bytebuddy:byte-buddy:1.12.22" usage="main-tests"/>
-    <dependency prefix="main.byte-buddy-agent" artifact="net.bytebuddy:byte-buddy-agent:1.12.22" usage="main-tests"/>
+    <dependency prefix="main.byte-buddy" artifact="net.bytebuddy:byte-buddy:1.14.2" usage="main-tests"/>
+    <dependency prefix="main.byte-buddy-agent" artifact="net.bytebuddy:byte-buddy-agent:1.14.2" usage="main-tests"/>
     <dependency prefix="main.objenesis" artifact="org.objenesis:objenesis:3.1" usage="main-tests"/>
-    <dependency prefix="main.log4j-core" artifact="org.apache.logging.log4j:log4j-core:2.19.0" usage="main-tests"/>
+    <dependency prefix="main.log4j-core" artifact="org.apache.logging.log4j:log4j-core:2.20.0" usage="main-tests"/>
     <dependency prefix="main.commons-logging" artifact="commons-logging:commons-logging:1.2" usage="main-tests"/>
 
     <dependency prefix="main.ant" artifact="org.apache.ant:ant:1.10.12" usage="excelant"/>
@@ -296,11 +296,11 @@ under the License.
 
     <!-- xml signature libs - not part of the distribution -->
     <dependency prefix="dsig.xmlsec" artifact="org.apache.santuario:xmlsec:3.0.1" usage="ooxml-provided"/>
-    <dependency prefix="dsig.bouncycastle-prov" artifact="org.bouncycastle:bcprov-jdk15on:1.70" usage="ooxml-provided"/>
-    <dependency prefix="dsig.bouncycastle-pkix" artifact="org.bouncycastle:bcpkix-jdk15on:1.70" usage="ooxml-provided"/>
-    <dependency prefix="dsig.bouncycastle-util" artifact="org.bouncycastle:bcutil-jdk15on:1.70" usage="ooxml-provided"/>
+    <dependency prefix="dsig.bouncycastle-prov" artifact="org.bouncycastle:bcprov-jdk18on:1.72" usage="ooxml-provided"/>
+    <dependency prefix="dsig.bouncycastle-pkix" artifact="org.bouncycastle:bcpkix-jdk18on:1.72" usage="ooxml-provided"/>
+    <dependency prefix="dsig.bouncycastle-util" artifact="org.bouncycastle:bcutil-jdk18on:1.72" usage="ooxml-provided"/>
     <!-- only used for signing the release - not used with the ooxml signatures -->
-    <dependency prefix="dsig.bouncycastle-bcpg" artifact="org.bouncycastle:bcpg-jdk15on:1.70" usage="util"/>
+    <dependency prefix="dsig.bouncycastle-bcpg" artifact="org.bouncycastle:bcpg-jdk18on:1.72.2" usage="util"/>
     <dependency prefix="ooxml.test.stax2" artifact="org.codehaus.woodstox:stax2-api:4.2.1" usage="ooxml-provided"/>
 
     <!-- svg/batik/pdf libs - not part of the distribution - move batik to its own directory because of JPMS module-path issues -->
@@ -566,6 +566,7 @@ under the License.
         <path refid="test.jar.classpath"/>
         <pathelement location="${main.log4j-api.jar}"/>
         <path path="${env.CLASSPATH}"/>
+        <path path="${svg.xml-apis-ext.jar}"/>
     </path>
 
     <patternset id="exclude-scratchpad-test">
@@ -681,6 +682,7 @@ under the License.
                 <include name="*slf4j*.jar"/>
             </fileset>
             <fileset dir="${basedir}/lib/main-tests">
+                <include name="byte-buddy-*1.12*.jar"/>
                 <include name="mockito-core-3*.jar"/>
                 <include name="mockito-core-4.0*.jar"/>
                 <include name="mockito-core-4.2*.jar"/>
@@ -707,6 +709,8 @@ under the License.
             </fileset>
             <fileset dir="${basedir}/lib/ooxml-provided">
                 <include name="bc*-1.6*.jar"/>
+                <include name="bc*-1.70.jar"/>
+                <include name="bc*-jdk15on*.jar"/>
                 <include name="batik*.jar"/>
                 <include name="slf4j*-1.*.jar"/>
                 <include name="xmlsec-2*.jar"/>
@@ -2383,45 +2387,6 @@ under the License.
             <globmapper from="*" to="${zipdir}/*"/>
         </mappedresources>
 
-        <!-- jars to include in binary assemblies -->
-        <union id="bin-files" cache="true">
-            <mappedresources refid="legal-files"/>
-            <mappedresources cache="true">
-                <fileset dir="${main.lib}">
-                    <include name="commons-codec-*.jar"/>
-                    <include name="commons-collections4-*.jar"/>
-                    <include name="commons-math3-*.jar"/>
-                    <include name="commons-io-*.jar"/>
-                    <include name="log4j-api-*.jar"/>
-                    <include name="SparseBitSet-*.jar"/>
-                </fileset>
-                <globmapper from="*" to="${zipdir}/lib/*"/>
-            </mappedresources>
-            <mappedresources cache="true">
-                <fileset dir="${ooxml.lib}"/>
-                <regexpmapper from="^(.*\.jar)$$" to="${zipdir}/ooxml-lib/\1"/>
-            </mappedresources>
-            <mappedresources cache="true">
-                <fileset dir="${ooxml-provided.lib}"/>
-                <regexpmapper from="^(.*\.jar)$$" to="${zipdir}/auxiliary/\1"/>
-            </mappedresources>
-            <mappedresources cache="true">
-                <fileset dir="${ooxml-batik.lib}"/>
-                <regexpmapper from="^(.*\.jar)$$" to="${zipdir}/auxiliary/\1"/>
-            </mappedresources>
-            <mappedresources cache="true">
-                <fileset dir="${dist.dir}/maven" includes="**/*.jar" excludes="**/*-javadoc.jar,**/*-sources.jar,**/*-tests.jar"/>
-                <chainedmapper>
-                    <flattenmapper/>
-                    <globmapper from="*" to="${zipdir}/*"/>
-                </chainedmapper>
-            </mappedresources>
-            <mappedresources cache="true">
-                <fileset dir="${build.site}"/>
-                <globmapper from="*" to="${zipdir}/docs/*"/>
-            </mappedresources>
-        </union>
-
         <!-- patterns to exclude from source assemblies -->
         <union id="src-files" cache="true">
             <mappedresources refid="legal-files"/>
@@ -2457,14 +2422,6 @@ under the License.
                 <globmapper from="*" to="${zipdir}/*"/>
             </mappedresources>
         </union>
-
-        <zip destfile="${dist.dir}/${jar.name}-bin-${version.id}-${DSTAMP}.zip">
-            <union refid="bin-files"/>
-        </zip>
-
-        <tar destfile="${dist.dir}/${jar.name}-bin-${version.id}-${DSTAMP}.tar.gz" longfile="gnu" compression="gzip">
-            <union refid="bin-files"/>
-        </tar>
 
         <zip destfile="${dist.dir}/${jar.name}-src-${version.id}-${DSTAMP}.zip">
             <union refid="src-files"/>

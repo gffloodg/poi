@@ -22,8 +22,8 @@ sourceSets {
 }
 
 dependencies {
-    api 'net.bytebuddy:byte-buddy:1.12.22'
-    api 'net.bytebuddy:byte-buddy-agent:1.12.22'
+    api 'net.bytebuddy:byte-buddy:1.14.2'
+    api 'net.bytebuddy:byte-buddy-agent:1.14.2'
     api "org.apache.xmlbeans:xmlbeans:${xmlbeansVersion}"
 }
 
@@ -31,8 +31,8 @@ final MODULE_NAME = 'org.apache.poi.ooxml_lite'
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(jdkVersion))
-        if (jdkVendor != '') vendor.set(JvmVendorSpec.matching(jdkVendor))
+        languageVersion = JavaLanguageVersion.of(jdkVersion)
+        if (jdkVendor != '') vendor = JvmVendorSpec.matching(jdkVendor)
     }
 }
 

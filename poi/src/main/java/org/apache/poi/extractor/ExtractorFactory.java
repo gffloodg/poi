@@ -38,6 +38,7 @@ import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.util.ThreadLocalUtil;
 
 /**
  * Figures out the correct POIOLE2TextExtractor for your supplied
@@ -64,6 +65,10 @@ public final class ExtractorFactory {
 
     /** Should this thread prefer event based over usermodel based extractors? */
     private static final ThreadLocal<Boolean> threadPreferEventExtractors = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    static {
+        // allow to clear all thread-locals via ThreadLocalUtil
+        ThreadLocalUtil.registerCleaner(threadPreferEventExtractors::remove);
+    }
 
     /** Should all threads prefer event based over usermodel based extractors? */
     private static Boolean allPreferEventExtractors;
@@ -111,10 +116,26 @@ public final class ExtractorFactory {
      * Should this thread prefer event based over usermodel based extractors?
      * Will only be used if the All Threads setting is null.
      *
+     * <p>
+     *     This uses ThreadLocals and these can leak resources when you have a lot of threads.
+     * </p>
+     *
+     * You should always try to call {@link #removeThreadPrefersEventExtractorsSetting()}.
+     *
      * @param preferEventExtractors If this threads should prefer event based extractors.
      */
     public static void setThreadPrefersEventExtractors(boolean preferEventExtractors) {
         threadPreferEventExtractors.set(preferEventExtractors);
+    }
+
+    /**
+     * Clears the setting for this thread made by {@link #setThreadPrefersEventExtractors(boolean) }
+     *
+     * @see #setThreadPrefersEventExtractors(boolean)
+     * @since POI 5.2.4
+     */
+    public static void removeThreadPrefersEventExtractorsSetting() {
+        threadPreferEventExtractors.remove();
     }
 
     /**

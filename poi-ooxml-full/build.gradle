@@ -51,7 +51,7 @@ final List MAIN_MODULE_PATH = sourceSets.main.runtimeClasspath.findAll{ it.path 
 compileJava {
     dependsOn 'generate_beans'
     options.fork = true
-    options.forkOptions.jvmArgs << '-Xmx2G'
+    options.forkOptions.jvmArgs += '-Xmx2G'
 }
 
 task compileJava9(type: JavaCompile) {
@@ -75,7 +75,7 @@ task copy_xsds(type: Copy) {
     from ('src/main/xmlschema/org/apache/poi/xdgf')
     from ('src/main/xmlschema/org/apache/poi/schemas') {
         include 'XAdES*.xsd', '*.xsdconfig', 'xmldsig*.xsd', 'ooxmlSchemas.xsdconfig', 'markup-compatibility.xsd',
-            'vmlDrawing.xsd', 'word12.xsd', 'xlThreaded*.xsd', 'dml-drawing.xsd'
+                'vmlDrawing.xsd', 'word12.xsd', 'xlThreaded*.xsd', 'dml-drawing.xsd', 'drawing-chart2012.xsd'
         exclude '*.zip'
     }
     from ('src/main/xmlschema/org/apache/poi/poifs/crypt') {
@@ -126,7 +126,7 @@ task generate_beans(dependsOn: copy_xsds) {
 }
 
 task sourceJar(type: Jar) {
-    classifier 'sources'
+    setArchiveClassifier 'sources'
     from sourceSets.main.allJava
 }
 

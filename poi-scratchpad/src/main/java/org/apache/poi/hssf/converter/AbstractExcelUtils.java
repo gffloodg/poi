@@ -113,11 +113,11 @@ class AbstractExcelUtils {
         StringBuilder stringBuilder = new StringBuilder(7);
         stringBuilder.append('#');
         for (short s : color.getTriplet()) {
-            if (s < 10) {
+            String hex = Integer.toHexString(s);
+            if (hex.length() == 1) {
                 stringBuilder.append('0');
             }
-
-            stringBuilder.append(Integer.toHexString(s));
+            stringBuilder.append(hex);
         }
         String result = stringBuilder.toString();
 

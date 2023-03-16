@@ -14,31 +14,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+package org.apache.poi.hssf.converter;
 
-package org.apache.poi.xwpf.usermodel;
-
-import org.apache.poi.xslf.usermodel.XSLFColor;
-import org.apache.poi.xwpf.XWPFTestDataSamples;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.junit.jupiter.api.Test;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTColor;
-
-import java.awt.*;
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public final class TestXWPFTheme {
-
+public class TestExcelUtils {
     @Test
-    void testRead() throws IOException {
-        try (XWPFDocument docx = XWPFTestDataSamples.openSampleDocument("sample.docx")) {
-            XWPFTheme theme = docx.getTheme();
-            assertEquals("Office Theme", theme.getName());
-            assertEquals("Cambria", theme.getMajorFont());
-            assertEquals("Calibri", theme.getMinorFont());
-            CTColor accent1 = theme.getCTColor("accent1");
-            XSLFColor color = new XSLFColor(accent1, null, null, null);
-            assertEquals(new Color(79, 129, 189), color.getColor());
-        }
+    void testGetColor() {
+        assertEquals("#800000", AbstractExcelUtils.getColor(HSSFColor.HSSFColorPredefined.DARK_RED.getColor()));
+        assertEquals("white", AbstractExcelUtils.getColor(HSSFColor.HSSFColorPredefined.WHITE.getColor()));
     }
 }
