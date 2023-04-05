@@ -14,31 +14,16 @@ def xercesUrl = 'https://repo1.maven.org/maven2/xerces/xercesImpl/2.6.1/xercesIm
 def xercesLib = './xercesImpl-2.6.1.jar'
 
 def poijobs = [
-        [ name: 'POI-DSL-1.8', trigger: 'H */12 * * *'
+        [ name: 'POI-DSL-1.8', trigger: 'H */12 * * *', jenkinsLite: true
         ],
         [ name: 'POI-DSL-OpenJDK', jdk: 'OpenJDK 1.8', trigger: 'H */12 * * *',
           // only a limited set of nodes still have OpenJDK 8 (on Ubuntu) installed
           slaves: 'ubuntu',
-          skipcigame: true
+          skipcigame: true,
+          jenkinsLite: true
         ],
-//        [ name: 'POI-DSL-1.10', jdk: '1.10', trigger: triggerSundays, skipcigame: true,
-//          // let's save some CPU cycles here, 10 had EOL in September 2018
-//          disabled: true
-//        ],
         [ name: 'POI-DSL-1.11', jdk: '1.11', trigger: triggerSundays, skipcigame: true
         ],
-//        [ name: 'POI-DSL-1.12', jdk: '1.12', trigger: triggerSundays, skipcigame: true,
-//          // let's save some CPU cycles here, 12 is not a LTS and JDK 13 is GA as of 17 September 2019
-//          disabled: true
-//        ],
-//        [ name: 'POI-DSL-1.13', jdk: '1.13', trigger: triggerSundays, skipcigame: true,
-//          // let's save some CPU cycles here, 13 is not a LTS and JDK 14 is GA as of 17 March 2020
-//          disabled: true
-//        ],
-//        [ name: 'POI-DSL-1.14', jdk: '1.14', trigger: triggerSundays, skipcigame: true,
-//          // let's save some CPU cycles here, 14 is not a LTS and JDK 15 is GA as of 15 September 2020
-//          disabled: true
-//        ],
         [ name: 'POI-DSL-1.15', jdk: '1.15', trigger: triggerSundays, skipcigame: true,
           // let's save some CPU cycles here, 15 is not a LTS and JDK 16 is GA
           disabled: true
@@ -91,16 +76,11 @@ def poijobs = [
 //        ],
         [ name: 'POI-DSL-SonarQube-Gradle', jdk: '1.11', trigger: 'H 7 * * *', sonar: true, skipcigame: true
         ],
-        [ name: 'POI-DSL-Windows-1.8', trigger: 'H */12 * * *', windows: true, slaves: 'Windows'
+        [ name: 'POI-DSL-Windows-1.8', trigger: 'H */12 * * *', windows: true, slaves: 'Windows', jenkinsLite: true
         ],
-//        [ name: 'POI-DSL-Windows-1.12', jdk: '1.12', trigger: triggerSundays, windows: true, slaves: 'Windows', skipcigame: true,
-//          // let's save some CPU cycles here, 12 is not a LTS and JDK 13 is GA now
-//          disabled: true
-//        ],
-//        [ name: 'POI-DSL-Windows-1.14', jdk: '1.14', trigger: triggerSundays, windows: true, slaves: 'Windows', skipcigame: true,
-//		  // let's only verify the latest two JDKs
-//		  disabled: true
-//        ],
+        [ name: 'POI-DSL-Windows-1.11', jdk: '1.11', trigger: triggerSundays, windows: true, slaves: 'Windows',
+          jenkinsLite: true
+        ],
         [ name: 'POI-DSL-Windows-1.15', jdk: '1.15', trigger: triggerSundays, windows: true, slaves: 'Windows', skipcigame: true,
           // let's save some CPU cycles here, 14 is not a LTS and JDK 15 is GA as of 15 September 2020
           disabled: true
@@ -114,10 +94,7 @@ def poijobs = [
         [ name: 'POI-DSL-Windows-1.18', jdk: '1.18', trigger: triggerSundays, windows: true, slaves: 'Windows', skipcigame: true,
           skipSpotbugs: true
         ],
-        [ name: 'POI-DSL-Github-PullRequests', trigger: '', githubpr: true, skipcigame: true,
-          // ensure the file which is needed from the separate documentation module does exist
-          // as we are checking out from git, we do not have the reference checked out here
-          addShell: 'mkdir -p src/documentation\ntouch src/documentation/RELEASE-NOTES.txt'
+        [ name: 'POI-DSL-Github-PullRequests', trigger: '', skipcigame: true, disabled: true
         ],
 ]
 
@@ -322,50 +299,15 @@ poijobs.each { poijob ->
         }
         jdk(jdkMapping.get(jdkKey).jenkinsJdk)
         scm {
-            if (poijob.githubpr) {
-                git {
-                    remote {
-                        github('apache/poi')
-                        refspec('+refs/pull/*:refs/remotes/origin/pr/*')
-                    }
-                    branch('${sha1}')
-                }
-            } else {
-                svn(svnBase) { svnNode ->
-                    svnNode / browser(class: 'hudson.scm.browsers.ViewSVN') /
-                            url << 'https://svn.apache.org/viewcvs.cgi/?root=Apache-SVN'
-                }
+            svn(svnBase) { svnNode ->
+                svnNode / browser(class: 'hudson.scm.browsers.ViewSVN') /
+                        url << 'https://svn.apache.org/viewcvs.cgi/?root=Apache-SVN'
             }
         }
         checkoutRetryCount(3)
 
-        if (poijob.githubpr) {
-            throttleConcurrentBuilds {
-                maxPerNode(1)
-                maxTotal(1)
-            }
-            parameters {
-                /* plugin not available:
-                gitParam('sha1') {
-                    description('Pull request')
-                    type('BRANCH')
-                }*/
-                stringParam('sha1', 'origin/pr/9/head', 'Provide a branch-spec, e.g. origin/pr/9/head')
-            }
-            triggers {
-                pullRequestBuildTrigger()
-                /*githubPullRequest {
-                    admins(['centic9', 'poi-benchmark', 'tballison', 'gagravarr', 'onealj', 'pjfanning', 'Alain-Bearez'])
-                    userWhitelist(['centic9', 'poi-benchmark', 'tballison', 'gagravarr', 'onealj', 'pjfanning', 'Alain-Bearez'])
-                    orgWhitelist(['apache'])
-                    cron('H/5 * * * *')
-                    triggerPhrase('OK to test')
-                }*/
-            }
-        } else {
-            triggers {
-                scm(trigger)
-            }
+        triggers {
+            scm(trigger)
         }
 
         def shellcmds = (poijob.windows ? shellCmdsWin : shellCmdsUnix).replace('POIJOBSHELL', poijob.shell ?: '')
@@ -413,21 +355,21 @@ poijobs.each { poijob ->
                 }
             }
             publishers {
-				// in archive, junit and jacoco publishers, matches beneath build/*/build/... are for Gradle-build results
-				archiveArtifacts('build/dist/*.tar.gz,*/build/reports/**,poi-integration/build/test-results/**,*/build/libs/*.jar')
-				archiveJunit('*/build/test-results/**/TEST-*.xml') {
-					testDataPublishers {
-						publishTestStabilityData()
-					}
-				}
-				jacocoCodeCoverage {
-					classPattern('*/build/classes')
-					execPattern('*/build/*.exec,*/build/jacoco/*.exec')
-					sourcePattern('*/src/main/java')
-					exclusionPattern('com/microsoft/**,org/openxmlformats/**,org/etsi/**,org/w3/**,schemaorg*/**,schemasMicrosoft*/**,org/apache/poi/hdf/model/hdftypes/definitions/*.class,org/apache/poi/hwpf/model/types/*.class,org/apache/poi/hssf/usermodel/DummyGraphics2d.class,org/apache/poi/sl/draw/binding/*.class')
-				}
+                // in archive, junit and jacoco publishers, matches beneath build/*/build/... are for Gradle-build results
+                archiveArtifacts('build/dist/*.tar.gz,*/build/reports/**,poi-integration/build/test-results/**,*/build/libs/*.jar')
+                archiveJunit('*/build/test-results/**/TEST-*.xml') {
+                    testDataPublishers {
+                        publishTestStabilityData()
+                    }
+                }
+                jacocoCodeCoverage {
+                    classPattern('*/build/classes')
+                    execPattern('*/build/*.exec,*/build/jacoco/*.exec')
+                    sourcePattern('*/src/main/java')
+                    exclusionPattern('com/microsoft/**,org/openxmlformats/**,org/etsi/**,org/w3/**,schemaorg*/**,schemasMicrosoft*/**,org/apache/poi/hdf/model/hdftypes/definitions/*.class,org/apache/poi/hwpf/model/types/*.class,org/apache/poi/hssf/usermodel/DummyGraphics2d.class,org/apache/poi/sl/draw/binding/*.class')
+                }
 
-				if (!poijob.skipcigame) {
+                if (!poijob.skipcigame) {
                     configure { project ->
                         project / publishers << 'hudson.plugins.cigame.GamePublisher' {}
                     }
@@ -448,7 +390,11 @@ poijobs.each { poijob ->
                     }
 
                     gradle {
-                        tasks('clean jenkins')
+                        if (poijob.jenkinsLite) {
+                            tasks('clean jenkinsLite')
+                        } else {
+                            tasks('clean jenkins')
+                        }
                         useWrapper(true)
                         if (poijob.noScratchpad) {
                             switches('-Pscratchpad.ignore=true')
@@ -521,15 +467,6 @@ poijobs.each { poijob ->
             }
         }
 
-
-        if (poijob.githubpr) {
-            configure {
-                it / 'properties' << 'com.cloudbees.jenkins.plugins.git.vmerge.JobPropertyImpl'(plugin: 'git-validated-merge') {
-                    credentialsId('ASF_Cloudbees_Jenkins_ci-builds')
-                    postBuildPushFailureHandler(class: 'com.cloudbees.jenkins.plugins.git.vmerge.pbph.PushFailureIsFailure')
-                }
-            }
-        }
     }
 }
 
@@ -691,45 +628,45 @@ Unfortunately we often see builds break because of changes/new machines...''')
                 'adoptopenjdk_hotspot_8u282',
                 'ibmjdk_1.8.0_261'
         )
-        // Note H50 is reserved according to it's node-descripion
+        // Note H50 is reserved according to its node-descripion
         label('Nodes','H22','H23','H24','H25','H26','H27','H28','H29','H30','H31','H32','H33','H34','H35','H36','H37','H38','H39','H40','H41','H42','H43','H44','H48','lucene1','lucene2','master')
     }
     steps {
         conditionalSteps {
             condition {
-				fileExists('/usr', BaseDir.WORKSPACE)
-			}
-			runner('DontRun')
-			steps {
-				shell(
-						'''which svn || true
+                fileExists('/usr', BaseDir.WORKSPACE)
+            }
+            runner('DontRun')
+            steps {
+                shell(
+                        '''which svn || true
 which javac
 javac -version
 echo '<?xml version="1.0"?><project name="POI Build" default="test"><target name="test"><echo>Using Ant: ${ant.version} from ${ant.home}</echo></target></project>' > build.xml
 ''')
-				ant {
-					antInstallation(defaultAnt)
-				}
+                ant {
+                    antInstallation(defaultAnt)
+                }
 
-				shell(
-						'''which mvn || true
+                shell(
+                        '''which mvn || true
 mvn -version || true
 echo '<project><modelVersion>4.0.0</modelVersion><groupId>org.apache.poi</groupId><artifactId>build-tst</artifactId><version>1.0.0</version></project>' > pom.xml
 ''')
-				maven {
-					goals('package')
-					mavenInstallation(defaultMaven)
-				}
-			}
+                maven {
+                    goals('package')
+                    mavenInstallation(defaultMaven)
+                }
+            }
         }
         conditionalSteps {
             condition {
-				fileExists('c:\\windows', BaseDir.WORKSPACE)
-			}
-			runner('DontRun')
-			steps {
-				batchFile(
-							'''@echo off
+                fileExists('c:\\windows', BaseDir.WORKSPACE)
+            }
+            runner('DontRun')
+            steps {
+                batchFile(
+                        '''@echo off
 echo .
 where javac.exe
 echo .
@@ -737,10 +674,10 @@ javac -version
 echo .
 echo ^<?xml version=^"1.0^"?^>^<project name=^"POI Build^" default=^"test^"^>^<target name=^"test^"^>^<echo^>Using Ant: ${ant.version} from ${ant.home}, ant detected Java ${ant.java.version} (may be different than actual Java sometimes...), using Java: ${java.version}/${java.runtime.version}/${java.vm.version}/${java.vm.name} from ${java.vm.vendor} on ${os.name}: ${os.version}^</echo^>^</target^>^</project^> > build.xml
 ''')
-				ant {
-					antInstallation(defaultAntWindows)
-				}
-			}
+                ant {
+                    antInstallation(defaultAntWindows)
+                }
+            }
         }
     }
 }

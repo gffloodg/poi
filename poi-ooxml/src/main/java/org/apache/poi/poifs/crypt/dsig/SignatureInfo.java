@@ -93,7 +93,7 @@ import org.w3c.dom.events.MutationEvent;
 
 /**
  * <p>This class is the default entry point for XML signatures and can be used for
- * validating an existing signed office document and signing a office document.</p>
+ * validating an existing signed office document and signing an office document.</p>
  *
  * <p><b>Validating a signed office document</b></p>
  *
@@ -154,8 +154,8 @@ import org.w3c.dom.events.MutationEvent;
  * in the classpath:</p>
  * <ul>
  * <li>BouncyCastle bcpkix and bcprov (tested against 1.72)</li>
- * <li>Apache Santuario "xmlsec" (tested against 3.0.1)</li>
- * <li>and log4j-api (tested against 2.19.x)</li>
+ * <li>Apache Santuario "xmlsec" (tested against 3.0.2)</li>
+ * <li>and log4j-api (tested against 2.20.x)</li>
  * </ul>
  */
 public class SignatureInfo {

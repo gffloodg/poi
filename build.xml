@@ -285,8 +285,8 @@ under the License.
     <dependency prefix="main.hamcrest" artifact="org.hamcrest:hamcrest:2.2" usage="main-tests"/>
     <dependency prefix="main.xmlunit" artifact="org.xmlunit:xmlunit-core:2.9.1" usage="main-tests"/>
     <dependency prefix="main.mockito" artifact="org.mockito:mockito-core:4.11.0" usage="main-tests"/>
-    <dependency prefix="main.byte-buddy" artifact="net.bytebuddy:byte-buddy:1.14.2" usage="main-tests"/>
-    <dependency prefix="main.byte-buddy-agent" artifact="net.bytebuddy:byte-buddy-agent:1.14.2" usage="main-tests"/>
+    <dependency prefix="main.byte-buddy" artifact="net.bytebuddy:byte-buddy:1.14.3" usage="main-tests"/>
+    <dependency prefix="main.byte-buddy-agent" artifact="net.bytebuddy:byte-buddy-agent:1.14.3" usage="main-tests"/>
     <dependency prefix="main.objenesis" artifact="org.objenesis:objenesis:3.1" usage="main-tests"/>
     <dependency prefix="main.log4j-core" artifact="org.apache.logging.log4j:log4j-core:2.20.0" usage="main-tests"/>
     <dependency prefix="main.commons-logging" artifact="commons-logging:commons-logging:1.2" usage="main-tests"/>
@@ -295,7 +295,7 @@ under the License.
     <dependency prefix="main.antlauncher" artifact="org.apache.ant:ant-launcher:1.10.12" usage="excelant"/>
 
     <!-- xml signature libs - not part of the distribution -->
-    <dependency prefix="dsig.xmlsec" artifact="org.apache.santuario:xmlsec:3.0.1" usage="ooxml-provided"/>
+    <dependency prefix="dsig.xmlsec" artifact="org.apache.santuario:xmlsec:3.0.2" usage="ooxml-provided"/>
     <dependency prefix="dsig.bouncycastle-prov" artifact="org.bouncycastle:bcprov-jdk18on:1.72" usage="ooxml-provided"/>
     <dependency prefix="dsig.bouncycastle-pkix" artifact="org.bouncycastle:bcpkix-jdk18on:1.72" usage="ooxml-provided"/>
     <dependency prefix="dsig.bouncycastle-util" artifact="org.bouncycastle:bcutil-jdk18on:1.72" usage="ooxml-provided"/>
@@ -332,13 +332,13 @@ under the License.
     <!-- jars in the ooxml-lib directory, see the fetch-ooxml-jars target-->
     <dependency prefix="ooxml.curvesapi" artifact="com.github.virtuald:curvesapi:1.07" usage="ooxml"/>
     <dependency prefix="ooxml.xmlbeans" artifact="org.apache.xmlbeans:xmlbeans:5.1.1" usage="ooxml"/>
-    <dependency prefix="ooxml.commons-compress" artifact="org.apache.commons:commons-compress:1.22" usage="ooxml"/>
+    <dependency prefix="ooxml.commons-compress" artifact="org.apache.commons:commons-compress:1.23.0" usage="ooxml"/>
 
     <!-- jars in the ooxml-test-lib directory, see the fetch-ooxml-jars target-->
     <dependency prefix="ooxml.test.reflections" artifact="org.reflections:reflections:0.10.2" usage="ooxml-tests"/>
     <dependency prefix="ooxml.test.guava" artifact="com.google.guava:guava:31.1-jre" usage="ooxml-tests"/>
     <dependency prefix="ooxml.test.javassist" artifact="org.javassist:javassist:3.27.0-GA" usage="ooxml-tests"/>
-    <dependency prefix="ooxml.test.slf4j-api" artifact="org.slf4j:slf4j-api:2.0.6" usage="ooxml-tests"/>
+    <dependency prefix="ooxml.test.slf4j-api" artifact="org.slf4j:slf4j-api:2.0.7" usage="ooxml-tests"/>
     <dependency prefix="ooxml.test.opczip" artifact="com.github.rzymek:opczip:1.2.0" usage="ooxml-tests"/>
 
     <!-- coverage libs -->
@@ -349,7 +349,7 @@ under the License.
 
     <!-- license and api checks -->
     <dependency prefix="rat" artifact="org.apache.rat:apache-rat:0.15" usage="util"/>
-    <dependency prefix="forbidden" artifact="de.thetaphi:forbiddenapis:3.4" usage="util"/>
+    <dependency prefix="forbidden" artifact="de.thetaphi:forbiddenapis:3.5.1" usage="util"/>
 
     <!-- See https://www.ecma-international.org/publications/standards/Ecma-376.htm -->
     <!-- "Copy these file(s), free of charge" -->
@@ -725,6 +725,7 @@ under the License.
                 <include name="org.jacoco.*-0.8.5.*.jar"/>
                 <include name="org.jacoco.*-0.8.6.*.jar"/>
                 <include name="forbiddenapis-3.1.jar"/>
+                <include name="forbiddenapis-3.4.jar"/>
             </fileset>
             <fileset dir="${basedir}/lib/util">
                 <include name="jacoco-0.8.5.zip"/>
@@ -2619,7 +2620,7 @@ under the License.
         <dependency prefix="spotbugs.log4j-api" artifact="org.apache.logging.log4j:log4j-api:2.17.2" usage="${spotbugs.lib}"/>
         <dependency prefix="spotbugs.log4j-core" artifact="org.apache.logging.log4j:log4j-core:2.17.2" usage="${spotbugs.lib}"/>
         <dependency prefix="spotbugs.log4j-slf4j18-impl" artifact="org.apache.logging.log4j:log4j-slf4j18-impl:2.17.2" usage="${spotbugs.lib}"/>
-        <dependency prefix="spotbugs.saxon" artifact="net.sf.saxon:Saxon-HE:11.4" usage="${spotbugs.lib}"/>
+        <dependency prefix="spotbugs.saxon" artifact="net.sf.saxon:Saxon-HE:11.5" usage="${spotbugs.lib}"/>
         <dependency prefix="spotbugs.xmlresolver" artifact="org.xmlresolver:xmlresolver:4.2.0" usage="${spotbugs.lib}"/>
 
         <mkdir dir="${basedir}${spotbugs.lib}/config"/>
